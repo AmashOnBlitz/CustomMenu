@@ -1,134 +1,17 @@
-#include <Windows.h>
-#include <windowsx.h>
-#include <tchar.h>
-#include <strsafe.h>
-#include <ctype.h>
-
-#define COUNTMENUITEMS 7
-#define CY_MENU_ITEM 18
-#define MENU_ITEM_CHAR_SIZE 256
-#define ERR_CHAR szErrBuff
-#define ERR_CHAR_SIZE 256
-#define ERR_CHAR_RESERVE static TCHAR ERR_CHAR[ERR_CHAR_SIZE];
-#define ERR_CHAR_FILL_1_VALUE(format,y) StringCchPrintf( \
-                                        ERR_CHAR,\
-                                        ERR_CHAR_SIZE,\
-                                        _TEXT(format) \
-                                        ,y \
-                                        );
-
-typedef struct ColorSchemeStruct{
-    COLORREF Active;
-    COLORREF Passive;
-    COLORREF Border;
-    int BorderWidth;
-} ColorSchemeStruct;
-
-typedef struct MenuItemStruct {
-    TCHAR szTitle[MENU_ITEM_CHAR_SIZE];
-    int cxOffset;
-    int cxTextPadding;
-    BOOL isHovered;
-    BOOL isRightMost;
-    ColorSchemeStruct ColScheme;
-
-    // INTERNALLY - HANDLED
-    BOOL isStrLong;
-} MenuItemStruct;
-
-void MenuItemAssignTitle(MenuItemStruct* mis, LPCSTR szTitle){
-    StringCchPrintf(mis->szTitle,MENU_ITEM_CHAR_SIZE,_TEXT("%s"),szTitle);
-}
-MenuItemStruct* GetBaseMIS(void)
-{
-    MenuItemStruct* baseMIS = (MenuItemStruct*)malloc(sizeof(MenuItemStruct));
-    baseMIS->cxOffset               = 0;
-    baseMIS->isHovered              = FALSE;
-    baseMIS->isRightMost            = FALSE;
-    baseMIS->isStrLong              = FALSE;
-    baseMIS->ColScheme.BorderWidth  = 1;
-    baseMIS->cxTextPadding          = 5;
-    baseMIS->ColScheme.Active       = RGB(220,220,220);
-    baseMIS->ColScheme.Border       = baseMIS->ColScheme.Active;
-    baseMIS->ColScheme.Passive      = RGB(255,255,255);
-    MenuItemAssignTitle(baseMIS,"Menu Item");
-    return baseMIS;
-}
-
-LRESULT CALLBACK fnWinProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR szCmdLine, int iCmdShow){
-    TCHAR szAppName[] = _TEXT("Custom Menu Program 1");
-    HWND hWnd;
-    MSG msg;
-    WNDCLASS wndClass;
-
-    wndClass.cbClsExtra = 0;
-    wndClass.cbWndExtra = 0;
-    wndClass.hbrBackground = (HBRUSH) GetStockObject(WHITE_BRUSH);
-    wndClass.hCursor = LoadCursor(NULL,IDC_ARROW);
-    wndClass.hIcon = LoadIcon(NULL,IDI_APPLICATION);
-    wndClass.hInstance = hInstance;
-    wndClass.lpfnWndProc = fnWinProc;
-    wndClass.lpszClassName = szAppName;
-    wndClass.lpszMenuName = NULL;
-    wndClass.style = CS_VREDRAW | CS_HREDRAW;
-
-    if (!RegisterClass(&wndClass)){
-        ERR_CHAR_RESERVE;
-        ERR_CHAR_FILL_1_VALUE(
-            "Cannot Register Window Class Of name \"%s\"",
-            wndClass.lpszClassName
-        );
-        MessageBox(
-            NULL,
-            ERR_CHAR,
-            _TEXT("ERROR : Cant Register Window Class"),
-            MB_ICONERROR | MB_APPLMODAL
-        );
-        return 0;
-    }
-
-    hWnd = CreateWindow(
-        szAppName,
-        szAppName,
-        WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT,
-        CW_USEDEFAULT,
-        CW_USEDEFAULT,
-        CW_USEDEFAULT,
-        NULL,
-        NULL,
-        hInstance,
-        NULL
-    );
-
-    if (hWnd == NULL){
-        ERR_CHAR_RESERVE;
-        ERR_CHAR_FILL_1_VALUE(
-            "Cannot Create Window Of Window Name \"%s\"",
-            szAppName
-        )
-        MessageBox(NULL,ERR_CHAR,_TEXT("ERROR : Window Creation Failed"),MB_ICONERROR | MB_APPLMODAL);
-        return 0;
-    }
-
-    ShowWindow(hWnd,iCmdShow);
-    UpdateWindow(hWnd);
-
-    while(GetMessage(&msg, NULL, 0, 0)){
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
-    }
-
-    return 1;
-}
+// CustomMenu.c by Amash Shafi Jami
+#include "CustomMenu.h"
 
 void fnCreateMenuPopUp(){
 
 }
 
-HWND fnCreateMenuItem(HWND parent, MenuItemStruct* mis, LPCSTR szMenuItemClass, LPCSTR title, int WidthFactor){
+HWND fnCreateMenuItem(
+    HWND parent,
+    MenuItemStruct* mis,
+    LPCSTR szMenuItemClass,
+    LPCSTR title,
+    int WidthFactor
+){
     HWND hMenuItem = CreateWindow(
             szMenuItemClass,
             title,
@@ -155,58 +38,6 @@ MenuItemStruct* fnMenuWinProcGetMIS(HWND hWnd)
 
     return mis;
 }
-
-BOOL fnIsPsuedoStringRequired(int maxChars, LPCSTR src){
-    int len = lstrlenA(src);
-    if (len <= maxChars) return FALSE;
-    return TRUE;
-}
-
-LPCSTR fnGetPseudoString(int maxChars, LPCSTR src)
-{
-    static char out[256];
-    int len = lstrlenA(src);
-
-    if (len <= maxChars)
-        return src;
-
-    int left  = (maxChars - 3) / 2;
-    int right = (maxChars - 3) - left;
-
-    CopyMemory(out, src, left);
-
-    out[left] = '.';
-    out[left+1] = '.';
-    out[left+2] = '.';
-
-    CopyMemory(out + left + 3, src + len - right, right);
-
-    out[maxChars] = '\0';
-    return out;
-}
-
-int fnGetCountCaps(LPCSTR string){
-    int iCaps = 0;
-    int iLen = lstrlenA(string);
-    for (int i = 0; i < iLen; i++)
-    {
-        if (isupper((unsigned char)string[i]))
-            iCaps++;
-    }
-    return iCaps;
-}
-int fnGetCountAve(LPCSTR string){
-    int iAve = 0;
-    int iLen = lstrlenA(string);
-    for (int i = 0; i < iLen; i++)
-    {
-        if (!isupper((unsigned char)string[i]))
-            iAve++;
-    }
-    return iAve;
-}
-
-
 
 LRESULT CALLBACK fnMenuWinProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam){
     MenuItemStruct* mis;
@@ -413,44 +244,3 @@ void fnCreateMenu(HWND parent){
     }
 }
 
-LRESULT CALLBACK fnWinProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam){
-    static int cxClient, cyClient;
-    HDC hdc;
-    PAINTSTRUCT ps;
-    switch (msg)
-    {
-    case WM_CREATE:{
-        fnCreateMenu(hWnd);
-        return 0;
-    }
-    case WM_SIZE:
-    cxClient = GET_X_LPARAM(lParam);
-    cyClient = GET_Y_LPARAM(lParam);
-    return 0;
-    case WM_PAINT:{
-        hdc = BeginPaint(hWnd,&ps);
-        const int iBuff = 256;
-        const int iPaddingCoord = 5;
-        TCHAR szBuff[iBuff];
-        StringCchPrintf(
-            szBuff,
-            iBuff,
-            _TEXT("Window Size (x : y) : %i : %i"),
-            cxClient,
-            cyClient
-        );
-        int cyPadding = iPaddingCoord + CY_MENU_ITEM;
-        int cxPadding = iPaddingCoord;
-        TextOut(hdc,cxPadding,cyPadding,szBuff,lstrlen(szBuff));
-        EndPaint(hWnd,&ps);
-        return 0;
-    }
-    case WM_DESTROY:
-    PostQuitMessage(0);
-    return 0;
-
-    default:
-        break;
-    }
-    return DefWindowProc(hWnd, msg, wParam, lParam);
-}

@@ -1,0 +1,1 @@
+gcc .\helpers.c .\CustomMenu.c .\main.c  -o CustomMenu -lgdi32 && .\CustomMenu.exe
