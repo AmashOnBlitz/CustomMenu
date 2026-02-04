@@ -5,6 +5,18 @@ void MenuItemAssignTitle(MenuItemStruct* mis, LPCSTR szTitle){
     StringCchPrintf(mis->szTitle,MENU_ITEM_CHAR_SIZE,_TEXT("%s"),szTitle);
 }
 
+void fndefPMISClickCallback(LPCSTR title){
+    printf("Menu Item %s Clicked!");
+}
+
+PopupMenuItemStruct* GetBasePMIS(void){
+    PopupMenuItemStruct* basePMIS = (PopupMenuItemStruct*)malloc(sizeof(PopupMenuItemStruct));
+    basePMIS->ColScheme.Active       = RGB(220,220,220);
+    basePMIS->ColScheme.Border       = basePMIS->ColScheme.Active;
+    basePMIS->ColScheme.Passive      = RGB(255,255,255);
+    basePMIS->OnClick                = fndefPMISClickCallback;
+}
+
 MenuItemStruct* GetBaseMIS(void)
 {
     MenuItemStruct* baseMIS = (MenuItemStruct*)malloc(sizeof(MenuItemStruct));

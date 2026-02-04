@@ -10,6 +10,7 @@
 #define COUNTMENUITEMS 7
 #define CY_MENU_ITEM 18
 #define MENU_ITEM_CHAR_SIZE 256
+#define POPUP_MENU_ITEM_CHAR_SIZE MENU_ITEM_CHAR_SIZE
 #define ERR_CHAR szErrBuff
 #define ERR_CHAR_SIZE 256
 #define ERR_CHAR_RESERVE static TCHAR ERR_CHAR[ERR_CHAR_SIZE];
@@ -19,6 +20,7 @@
                                         _TEXT(format) \
                                         ,y \
                                         );
+typedef void (*OnClickCallback)(LPCSTR title);
 
 typedef struct ColorSchemeStruct{
     COLORREF Active;
@@ -35,8 +37,18 @@ typedef struct MenuItemStruct {
     BOOL isRightMost;
     ColorSchemeStruct ColScheme;
 
+
+
     // INTERNALLY - HANDLED
     BOOL isStrLong;
     // INTERNALLY - HANDLED
     HWND hHoverBox;
+    // INTERNALLY - HANDLED
+    HWND hPopUp;
 } MenuItemStruct;
+
+typedef struct PopupMenuItemStuct{
+    TCHAR szTitle[POPUP_MENU_ITEM_CHAR_SIZE];
+    ColorSchemeStruct ColScheme;
+    OnClickCallback OnClick;
+} PopupMenuItemStruct;

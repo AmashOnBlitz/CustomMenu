@@ -2,9 +2,6 @@
 #include "CustomMenu.h"
 #include "hoverBox.h"
 
-void fnCreateMenuPopUp(){
-
-}
 
 HWND fnCreateMenuItem(
     HWND parent,
