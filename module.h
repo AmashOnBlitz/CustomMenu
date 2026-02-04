@@ -37,4 +37,6 @@ typedef struct MenuItemStruct {
 
     // INTERNALLY - HANDLED
     BOOL isStrLong;
+    // INTERNALLY - HANDLED
+    HWND hHoverBox;
 } MenuItemStruct;

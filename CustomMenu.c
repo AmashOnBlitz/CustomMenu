@@ -1,5 +1,6 @@
 // CustomMenu.c by Amash Shafi Jami
 #include "CustomMenu.h"
+#include "hoverBox.h"
 
 void fnCreateMenuPopUp(){
 
@@ -28,6 +29,15 @@ HWND fnCreateMenuItem(
     return hMenuItem;
 }
 
+int fnGetHoverBoxWidth(HDC hdc, MenuItemStruct* mis){
+    SIZE sz;
+    int len = lstrlenA(mis->szTitle);
+    if (len == 0) return 0;
+    GetTextExtentPoint32A(hdc, mis->szTitle, len, &sz);
+    return sz.cx + 10; 
+}
+
+
 MenuItemStruct* fnMenuWinProcGetMIS(HWND hWnd)
 {
     MenuItemStruct* mis =
@@ -44,6 +54,7 @@ LRESULT CALLBACK fnMenuWinProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
     PAINTSTRUCT ps;
     TEXTMETRIC tm;
     HDC hdc;
+    static int cxHBox;
     static HFONT hFont = NULL;
     static int cxClient, cyClient;
     static int cxChar, CxCaps, cyChar;
@@ -110,9 +121,9 @@ LRESULT CALLBACK fnMenuWinProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
 
                 charsThatFit = i;
             }
-
             if(fnIsPsuedoStringRequired(charsThatFit,mis->szTitle)){
                 mis->isStrLong = TRUE;
+                cxHBox = fnGetHoverBoxWidth(hdc,mis);
             }else{
                 mis->isStrLong = FALSE;
             }
@@ -155,22 +166,49 @@ LRESULT CALLBACK fnMenuWinProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
         }
         
         case WM_MOUSEMOVE:
-        mis = fnMenuWinProcGetMIS(hWnd);
-        if(mis->isHovered != TRUE){
-            mis->isHovered = TRUE;
-            InvalidateRect(hWnd,NULL,TRUE);
-            TRACKMOUSEEVENT tme = {0};
-            tme.cbSize = sizeof(TRACKMOUSEEVENT);
-            tme.dwFlags = TME_LEAVE;
-            tme.dwHoverTime = HOVER_DEFAULT;
-            tme.hwndTrack = hWnd;
-            TrackMouseEvent(&tme);
+        {
+            mis = fnMenuWinProcGetMIS(hWnd);
+            POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
+            
+            ClientToScreen(hWnd, &pt);
+            if (!mis->isHovered) {
+                mis->isHovered = TRUE;
+                InvalidateRect(hWnd, NULL, TRUE);
+
+                if (mis->isStrLong) {
+                    mis->hHoverBox = fnCreateHoverBox(
+                        NULL,
+                        pt.x,
+                        pt.y + CY_MENU_ITEM,
+                        mis->szTitle
+                    );
+                }
+                TRACKMOUSEEVENT tme = { sizeof(tme) };
+                tme.dwFlags = TME_LEAVE;
+                tme.hwndTrack = hWnd;
+                TrackMouseEvent(&tme);
+            }
+            if (mis->hHoverBox) {
+                SetWindowPos(
+                    mis->hHoverBox,
+                    HWND_TOPMOST,
+                    pt.x,
+                    pt.y + CY_MENU_ITEM,
+                    0, 0,
+                    SWP_NOSIZE | SWP_NOACTIVATE | SWP_SHOWWINDOW
+                );
+            }
+            return 0;
         }
         return 0;
         case WM_MOUSELEAVE:
         mis = fnMenuWinProcGetMIS(hWnd);
         if(mis->isHovered != FALSE){
             mis->isHovered = FALSE;
+            if (mis->hHoverBox) {
+                DestroyWindow(mis->hHoverBox);
+                mis->hHoverBox = NULL;
+            }
             InvalidateRect(hWnd,NULL,TRUE);
         }
         return 0;

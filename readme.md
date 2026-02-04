@@ -5,3 +5,4 @@ This project explores manual menu rendering, text measurement, borders, hover ef
 and low-level UI control without relying on default Windows menus.
 
 > Built as a learning + experimentation project for understanding Win32 internals.
+> Still Under Development !

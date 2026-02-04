@@ -1,1 +1,1 @@
-gcc .\helpers.c .\CustomMenu.c .\main.c  -o CustomMenu -lgdi32 && .\CustomMenu.exe
+gcc .\helpers.c .\CustomMenu.c .\main.c .\hoverBox.c -o CustomMenu -lgdi32 && .\CustomMenu.exe
