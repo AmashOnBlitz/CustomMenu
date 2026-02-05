@@ -3,8 +3,6 @@
 #include "module.h"
 #include "helpers.h"
 
-void fnCreateMenuPopUp();
-
 HWND fnCreateMenuItem(
     HWND parent, 
     MenuItemStruct* mis, 

@@ -13,6 +13,10 @@ void fndefPMISClickCallback(LPCSTR title){
     printf("Menu Item %s Clicked!");
 }
 
+int getPMISAItemCount(PopupMenuItemStructArray* PMISA){
+    return PMISA->count;
+}
+
 PopupMenuItemStruct* GetBasePMIS(void){
     PopupMenuItemStruct* basePMIS   = (PopupMenuItemStruct*)malloc(sizeof(PopupMenuItemStruct));
     basePMIS->ColScheme.Active      = RGB(220,220,220);
@@ -23,11 +27,30 @@ PopupMenuItemStruct* GetBasePMIS(void){
     return basePMIS;
 }
 
-PopupMenuItemStuctArray *getBasePMISA(void)
+PopupMenuItemStructArray* getBasePMISA(void)
 {
-    PopupMenuItemStuctArray* basePMISA  = (PopupMenuItemStuctArray*)malloc(sizeof(PopupMenuItemStuctArray));
-    basePMISA->iteration                = malloc(sizeof(int));
-    return basePMISA;
+    PopupMenuItemStructArray* pmisa =
+        (PopupMenuItemStructArray*)calloc(1, sizeof(PopupMenuItemStructArray));
+    pmisa->count = 0;
+    return pmisa;
+}
+
+void PMISA_AddEx(
+    PopupMenuItemStructArray* pmisa,
+    LPCSTR title,
+    OnClickCallback cb,
+    ColorSchemeStruct scheme
+){
+    if (pmisa->count >= MAX_POPUP_ITEMS) return;
+
+    PopupMenuItemStruct* item =
+        (PopupMenuItemStruct*)malloc(sizeof(PopupMenuItemStruct));
+
+    PopUpMenuItemAssignTitle(item, title);
+    item->OnClick   = cb;
+    item->ColScheme = scheme;
+
+    pmisa->array[pmisa->count++] = item;
 }
 
 MenuItemStruct* GetBaseMIS(void)
@@ -42,6 +65,8 @@ MenuItemStruct* GetBaseMIS(void)
     baseMIS->ColScheme.Active       = RGB(220,220,220);
     baseMIS->ColScheme.Border       = baseMIS->ColScheme.Active;
     baseMIS->ColScheme.Passive      = RGB(255,255,255);
+    baseMIS->hPopUp                 = NULL;
+    baseMIS->WidthFactor            = 100;
     MenuItemAssignTitle(baseMIS,"Menu Item");
     return baseMIS;
 }

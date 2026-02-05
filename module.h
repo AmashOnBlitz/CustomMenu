@@ -21,6 +21,8 @@
                                         _TEXT(format) \
                                         ,y \
                                         );
+
+typedef struct PopupMenuItemStructArray PopupMenuItemStructArray;
 typedef void (*OnClickCallback)(LPCSTR title);
 
 typedef struct ColorSchemeStruct{
@@ -46,6 +48,11 @@ typedef struct MenuItemStruct {
     HWND hHoverBox;
     // INTERNALLY - HANDLED
     HWND hPopUp;
+    // INTERNALLY - HANDLED
+    int WidthFactor;
+    // INTERNALLY - HANDLED
+    PopupMenuItemStructArray* pmisa;
+    
 } MenuItemStruct;
 
 typedef struct PopupMenuItemStuct{
@@ -54,7 +61,7 @@ typedef struct PopupMenuItemStuct{
     OnClickCallback OnClick;
 } PopupMenuItemStruct;
 
-typedef struct PopupMenuItemStuctArray{
+typedef struct PopupMenuItemStructArray{
     PopupMenuItemStruct* array[MAX_POPUP_ITEMS];
-    LPVOID* iteration;
-} PopupMenuItemStuctArray;
+    int count;
+} PopupMenuItemStructArray;

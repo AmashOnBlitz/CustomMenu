@@ -1,6 +1,68 @@
 // CustomMenu.c by Amash Shafi Jami
 #include "CustomMenu.h"
 #include "hoverBox.h"
+#include "MenuPopUp.h"
+
+HWND hCurrentPopup = NULL;
+
+void CloseCurrentPopup()
+{
+    if (hCurrentPopup) {
+        ShowWindow(hCurrentPopup, SW_HIDE);
+        hCurrentPopup = NULL;
+    }
+}
+
+void OnHelpClicked(LPCSTR title)
+{
+    MessageBoxA(NULL,
+        "This is a custom menu project\nby Amash Shafi Jami",
+        "About",
+        MB_OK | MB_ICONINFORMATION);
+}
+
+void OnExitClicked(LPCSTR title)
+{
+    PostQuitMessage(0);
+}
+
+void OnSettingsClicked(LPCSTR title)
+{
+    MessageBoxA(NULL, "Settings Clicked!", "Info", MB_OK | MB_ICONINFORMATION);
+}
+
+void OnFileClicked(LPCSTR title)
+{
+    MessageBoxA(NULL, "File Clicked!", "Info", MB_OK | MB_ICONINFORMATION);
+}
+
+ColorSchemeStruct Scheme_Normal = {
+    RGB(230,230,230),
+    RGB(248,248,248),
+    RGB(200,200,200),
+    1
+};
+
+PopupMenuItemStructArray* BuildHelpPMISA(void)
+{
+    PopupMenuItemStructArray* pmisa = getBasePMISA();
+
+    PMISA_AddEx(pmisa, "About", OnHelpClicked, Scheme_Normal);
+    PMISA_AddEx(pmisa, "Settings", OnSettingsClicked, Scheme_Normal);
+    PMISA_AddEx(pmisa, "Exit", OnExitClicked, Scheme_Normal);
+
+    return pmisa;
+}
+
+PopupMenuItemStructArray* BuildFilePMISA(void)
+{
+    PopupMenuItemStructArray* pmisa = getBasePMISA();
+    PMISA_AddEx(pmisa, "New", OnFileClicked, Scheme_Normal);
+    PMISA_AddEx(pmisa, "Open", OnFileClicked, Scheme_Normal);
+    PMISA_AddEx(pmisa, "Save", OnFileClicked, Scheme_Normal);
+    PMISA_AddEx(pmisa, "Exit", OnExitClicked, Scheme_Normal);
+    return pmisa;
+}
 
 
 HWND fnCreateMenuItem(
@@ -57,6 +119,22 @@ LRESULT CALLBACK fnMenuWinProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
     static int cxChar, CxCaps, cyChar;
     switch (msg)
     {
+        case WM_LBUTTONUP:{
+            mis = fnMenuWinProcGetMIS(hWnd);
+            ShowWindow(hCurrentPopup,HIDE_WINDOW);
+            hCurrentPopup = NULL;
+            if (!mis->pmisa || mis->pmisa->count == 0)
+            return 0;
+            RECT rc;
+            GetWindowRect(hWnd, &rc);
+            POINT p = {
+                rc.left,
+                rc.bottom  
+            };
+
+            hCurrentPopup = fnCreateMenuPopUp(p,mis->WidthFactor,mis->pmisa);
+            return 0;
+        }
         case WM_CREATE:{
         CREATESTRUCT *cs = (CREATESTRUCT*)(lParam);
         mis = (MenuItemStruct*)cs->lpCreateParams;
@@ -275,7 +353,23 @@ void fnCreateMenu(HWND parent){
         MenuItemAssignTitle(mis,arrMenuItemNames[i]);
         mis->cxOffset = i * WidthFactor;
         mis->isHovered = FALSE;
-        MENUITEMS[i] = fnCreateMenuItem(parent,mis,szMenuItemClass,"About",WidthFactor);
+        if (lstrcmpi(arrMenuItemNames[i], "Help") == 0)
+        {
+            mis->pmisa = BuildHelpPMISA();
+        }
+        else if(lstrcmpi(arrMenuItemNames[i], "File") == 0) mis->pmisa = BuildFilePMISA();
+        else
+        {
+            mis->pmisa = getBasePMISA();
+        }
+
+        MENUITEMS[i] = fnCreateMenuItem(
+            parent,
+            mis,
+            szMenuItemClass,
+            arrMenuItemNames[i],
+            WidthFactor
+        );
     }
 }
 
