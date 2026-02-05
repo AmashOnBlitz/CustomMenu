@@ -5,21 +5,34 @@ void MenuItemAssignTitle(MenuItemStruct* mis, LPCSTR szTitle){
     StringCchPrintf(mis->szTitle,MENU_ITEM_CHAR_SIZE,_TEXT("%s"),szTitle);
 }
 
+void PopUpMenuItemAssignTitle(PopupMenuItemStruct* pmis, LPCSTR szTitle){
+    StringCchPrintf(pmis->szTitle,MENU_ITEM_CHAR_SIZE,_TEXT("%s"),szTitle);
+}
+
 void fndefPMISClickCallback(LPCSTR title){
     printf("Menu Item %s Clicked!");
 }
 
 PopupMenuItemStruct* GetBasePMIS(void){
-    PopupMenuItemStruct* basePMIS = (PopupMenuItemStruct*)malloc(sizeof(PopupMenuItemStruct));
-    basePMIS->ColScheme.Active       = RGB(220,220,220);
-    basePMIS->ColScheme.Border       = basePMIS->ColScheme.Active;
-    basePMIS->ColScheme.Passive      = RGB(255,255,255);
-    basePMIS->OnClick                = fndefPMISClickCallback;
+    PopupMenuItemStruct* basePMIS   = (PopupMenuItemStruct*)malloc(sizeof(PopupMenuItemStruct));
+    basePMIS->ColScheme.Active      = RGB(220,220,220);
+    basePMIS->ColScheme.Border      = basePMIS->ColScheme.Active;
+    basePMIS->ColScheme.Passive     = RGB(255,255,255);
+    basePMIS->OnClick               = fndefPMISClickCallback;
+    PopUpMenuItemAssignTitle(basePMIS,"Popup Menu Item");
+    return basePMIS;
+}
+
+PopupMenuItemStuctArray *getBasePMISA(void)
+{
+    PopupMenuItemStuctArray* basePMISA  = (PopupMenuItemStuctArray*)malloc(sizeof(PopupMenuItemStuctArray));
+    basePMISA->iteration                = malloc(sizeof(int));
+    return basePMISA;
 }
 
 MenuItemStruct* GetBaseMIS(void)
 {
-    MenuItemStruct* baseMIS = (MenuItemStruct*)malloc(sizeof(MenuItemStruct));
+    MenuItemStruct* baseMIS         = (MenuItemStruct*)malloc(sizeof(MenuItemStruct));
     baseMIS->cxOffset               = 0;
     baseMIS->isHovered              = FALSE;
     baseMIS->isRightMost            = FALSE;

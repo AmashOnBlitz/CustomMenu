@@ -7,6 +7,7 @@
 #include <strsafe.h>
 #include <ctype.h>
 
+#define MAX_POPUP_ITEMS 32
 #define COUNTMENUITEMS 7
 #define CY_MENU_ITEM 18
 #define MENU_ITEM_CHAR_SIZE 256
@@ -52,3 +53,8 @@ typedef struct PopupMenuItemStuct{
     ColorSchemeStruct ColScheme;
     OnClickCallback OnClick;
 } PopupMenuItemStruct;
+
+typedef struct PopupMenuItemStuctArray{
+    PopupMenuItemStruct* array[MAX_POPUP_ITEMS];
+    LPVOID* iteration;
+} PopupMenuItemStuctArray;
